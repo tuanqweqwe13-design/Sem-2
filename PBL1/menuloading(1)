@@ -9,15 +9,12 @@ void gotoxy(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-// Hàm đổi màu chữ và nền
-// foreground: màu chữ (0-15)
-// background: màu nền (0-15, mặc định là 0 - đen)
+
 void setColor(int foreground, int background) {
     WORD color = (background << 4) | foreground;
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
 }
 
-// Hàm lấy tọa độ trung tâm màn hình
 void get_console_center(int *x, int *y) {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -26,7 +23,6 @@ void get_console_center(int *x, int *y) {
 }
 
 int main() {
-    // Thiết lập Console hỗ trợ hiển thị ký tự đặc biệt
     SetConsoleOutputCP(65001);
 
     int cx, cy;
