@@ -4,6 +4,20 @@
 #include <time.h>
 #include <conio.h>
 
+//hàm chung
+void gotoxy(int x, int y); // hàm đẩy chuột
+void setColor(int foreground, int background); // hàm chỉnh màu
+void get_console_center(int *x, int *y) // hàm căn giữa 
+
+//hàm loading + login
+void loading ();
+void inputPassword(char *pass);
+void get_console_center(int *x, int *y); 
+int checkLogin(char *user, char *pass, char *roleOut);
+void login();
+
+// hàm 
+
 #define MAX 36
 #define MAX_CHON 5
 #define MAX_DON 100
@@ -52,12 +66,10 @@ void gotoxy(int x, int y) {
     coord.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
-
 void setColor(int foreground, int background) {
     WORD color = (background << 4) | foreground;
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
 }
-
 void get_console_center(int *x, int *y) {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -359,7 +371,7 @@ long inHoaDon(int maMon[], int soLuong[], int n, char ghiChuDon[]) {
     printf("+===========================================================+\n");
     return tong;
 }
-  void capNhatThongKe(int maMon[], int soLuong[], int n){
+void capNhatThongKe(int maMon[], int soLuong[], int n){
     for(int i = 0; i < n; i++){
         thongKeMon[maMon[i]] += soLuong[i];
     }
@@ -782,6 +794,7 @@ int main() {
 
 // phần đăng nhập 
     login ();
+
 // phần menu chính 
     printf("Nhập mã ngày: ");
     scanf("%s", maNgay);
