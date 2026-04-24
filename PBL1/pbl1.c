@@ -4,20 +4,6 @@
 #include <time.h>
 #include <conio.h>
 
-//hàm chung
-void gotoxy(int x, int y); // hàm đẩy chuột
-void setColor(int foreground, int background); // hàm chỉnh màu
-void get_console_center(int *x, int *y) // hàm căn giữa 
-
-//hàm loading + login
-void loading ();
-void inputPassword(char *pass);
-void get_console_center(int *x, int *y); 
-int checkLogin(char *user, char *pass, char *roleOut);
-void login();
-
-// hàm 
-
 #define MAX 36
 #define MAX_CHON 5
 #define MAX_DON 100
@@ -59,7 +45,141 @@ int soMon = 31;
 int thongKeMon[MAX] = {0};
 char maNgayDon[MAX_DON][20];
 
-// Hàm chung 
+//========================Nguyên mẫu hàm========================
+//hàm chung
+void gotoxy(int x, int y); // hàm đẩy chuột
+void setColor(int foreground, int background); // hàm chỉnh màu
+void get_console_center(int *x, int *y); // hàm căn giữa
+//hàm loading + login
+void loading ();
+int login();
+void inputPassword(char *pass);
+int checkLogin(char *user, char *pass, char *roleOut);
+// hàm chính nè
+    // in menu và hóa đơn
+void menu();
+void inHoaDonTamTinh(int maMon[], int soLuong[], int n);
+long inHoaDon(int maMon[], int soLuong[], int n, char ghiChuDon[]);
+void capNhatThongKe(int maMon[], int soLuong[], int n);
+    // hàm đặt món + xóa món khi đặt
+long datMon();
+    // thống kê món đặt + quản lý món khi đặt 
+void monBanNhieuNhat();
+void timTheoMaNgay();
+void bangXepHang();
+void thongKe();
+    // quản lý món
+void xemDanhSachMon();
+void themMon();
+void xoaMon();
+void suaGiaMon();
+void quanLyMon();
+    //ghi vòa file 
+void ghiFile();
+
+
+int main() {
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+    int chon;
+    char ma[20], maNgay[20];
+    int userPermission = login();
+// phần menuloading 
+    loading ();
+    system("cls");
+
+// phần đăng nhập 
+    login ();
+    system("cls");
+
+// phần menu chính 
+    printf("Nhập mã ngày: ");
+    scanf("%s", maNgay);
+
+    do {
+        printf("\n+===========================================+\n");
+        printf("|          MENU CHÍNH                         |\n");
+        printf("+=============================================+\n");
+        printf("| 1. Đặt món                                  |\n");
+        printf("| 2. Quản lý món (admin only)                 |\n");
+        printf("| 3. Tìm theo mã ngày (admin only)            |\n");
+        printf("| 4. Bảng xếp hạng món ăn (admin only)        |\n");
+        printf("| 0. Kết thúc                                 |\n");
+        printf("+=============================================+\n");
+        printf("Chọn: ");
+        scanf("%d", &chon);
+
+       if(chon == 1){
+
+        if (soDon >= MAX_DON) {
+        printf("Đã đạt giới hạn đơn hàng!\n");
+        continue;}
+
+    menu();
+
+    while (1) {
+
+        printf("\nNhập mã giao dịch : ");
+        scanf("%s", ma);
+
+        if (strcmp(ma, maNgay) == 0) {
+            printf(">>> Đã nhập MÃ NGÀY. Thoát chế độ đặt món!\n");
+            break;
+        }
+
+        int trung = 0;
+        for(int i = 0; i < soDon; i++){
+            if(strcmp(maGD[i], ma) == 0){
+                trung = 1;
+                break;
+            }
+        }
+
+        if(trung){
+            printf("Mã giao dịch bị trùng! Nhập lại.\n");
+            continue;
+        }
+
+        strcpy(maGD[soDon], ma);
+        strcpy(maNgayDon[soDon], maNgay);
+
+        long tong = datMon();
+
+        tongTienDon[soDon] = tong;
+        soDon++;
+
+        printf("\n>>> Đặt xong 1 đơn. Tiếp tục hoặc nhập MÃ NGÀY (%s) để thoát.\n",maNgay);
+
+        if (soDon >= MAX_DON) {
+            printf("Đã đạt giới hạn đơn hàng!\n");
+            break;
+        }
+    }
+}
+
+        else if(chon == 2 && userPermission == 1){
+            quanLyMon(); 
+        }
+
+        else if(chon == 3 && userPermission == 1){
+            timTheoMaNgay(); 
+        }
+        else if (chon==4 && userPermission == 1){
+            bangXepHang();
+        }
+        else if (chon==1 && userPermission == 2 || chon == 2 && userPermission == 2 || chon == 3 && userPermission == 2 || chon == 4 && userPermission == 2){
+            printf ("Bạn không có quyền này, hãy chọn lại!");
+            continue;;
+        }
+    } while(chon != 0);
+
+    thongKe();
+    monBanNhieuNhat();
+    ghiFile();
+
+    return 0;
+}
+
 void gotoxy(int x, int y) {
     COORD coord;
     coord.X = x;
@@ -76,7 +196,6 @@ void get_console_center(int *x, int *y) {
     *x = (csbi.srWindow.Right - csbi.srWindow.Left + 1) / 2;
     *y = (csbi.srWindow.Bottom - csbi.srWindow.Top + 1) / 2;
 }
-// Hàm in loading
 void loading (){
     int cx, cy;
     get_console_center(&cx, &cy);
@@ -119,7 +238,6 @@ void loading (){
     rewind(stdin);
     while (getchar() != '\n'); 
 }
-// Hàm cho phần đăng nhập
 void inputPassword(char *pass) {
     char ch;
     int i = 0;
@@ -140,6 +258,7 @@ void inputPassword(char *pass) {
     }
 }
 int checkLogin(char *user, char *pass, char *roleOut) {
+    int role1 = 0 ;
     FILE *f = fopen("accounts.txt", "r");
     if (f == NULL) {
         f = fopen("accounts.txt", "w");
@@ -153,62 +272,68 @@ int checkLogin(char *user, char *pass, char *roleOut) {
         if (strcmp(user, acc.username) == 0 && strcmp(pass, acc.password) == 0) {
             strcpy(roleOut, acc.role); 
             fclose(f);
-            if (strcmp(acc.role, "admin") == 0) return 1;
-            return 2; 
+            if (strcmp(acc.role, "admin") == 0) {role1 = 1; return 1;}
+            if (strcmp(acc.role, "staff") == 0) {role1 = 2; return 2;}
+            return 3; 
         }
     }
     fclose(f);
-    return 0;
+    return role1;
 }
-void login(){
-    // Thiết lập tiếng Việt và ẩn con trỏ
+int login(){
     SetConsoleOutputCP(65001);
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO cursorInfo;
     GetConsoleCursorInfo(hConsole, &cursorInfo);
-    cursorInfo.bVisible = TRUE; // Hiện con trỏ để người dùng biết chỗ nhập
+    cursorInfo.bVisible = TRUE; 
     SetConsoleCursorInfo(hConsole, &cursorInfo);
 
     char user[30], pass[30], role[10];
-
-    // Vòng lặp vô tận cho đến khi đăng nhập đúng
+    int cx, cy;
+    get_console_center(&cx, &cy);
+    int permission;
     while (1) {
         system("cls");
-        printf("\n=========================================");
-        printf("\n        ĐĂNG NHẬP HỆ THỐNG             ");
-        printf("\n=========================================");
+        int welcomeY = cy - 8;
+        gotoxy(cx - 27, welcomeY++); printf("██╗      ██████╗  ██████╗ ██╗███╗   ██╗");
+        gotoxy(cx - 27, welcomeY++); printf("██║     ██╔═══██╗██╔════╝ ██║████╗  ██║");
+        gotoxy(cx - 27, welcomeY++); printf("██║     ██║   ██║██║  ███╗██║██╔██╗ ██║");
+        gotoxy(cx - 27, welcomeY++); printf("██║     ██║   ██║██║   ██║██║██║╚██╗██║");
+        gotoxy(cx - 27, welcomeY++); printf("███████╗╚██████╔╝╚██████╔╝██║██║ ╚████║");
+        gotoxy(cx - 27, welcomeY++); printf("╚══════╝ ╚═════╝  ╚═════╝ ╚═╝╚═╝  ╚═══╝");        
         
         printf("\n\nTài khoản: ");
         scanf("%s", user);
-        
+
         printf("Mật khẩu : ");
         inputPassword(pass);
 
-        int result = checkLogin(user, pass, role);
+        permission = checkLogin(user, pass, role);
 
-        if (result > 0) {
+        if (permission > 0) {
             printf("\n\n-----------------------------------------");
             printf("\nĐăng nhập thành công!");
-            printf("\nQuyền hạn: %s", (result == 1) ? "QUẢN LÝ (ADMIN)" : "NHÂN VIÊN (STAFF) \n");
+            printf("\nQuyền hạn: %s", (permission == 1) ? "QUẢN LÝ (ADMIN)" : "NHÂN VIÊN (STAFF) \n");
             
             Beep(1000, 200);
             
-            if (result == 1) {
+            if (permission == 1 ) {
                 printf(" \n Chào mừng Admin! \n");
             } else {
                 printf(" \n Chào mừng Staff!\n");
             }
                 printf("\n(Nhấn phím bất kỳ để tiếp tục...)");
                 getch();
-            break; // Thoát vòng lặp đăng nhập
+            break; 
         } else {
             printf("\n\n[!] Sai tài khoản hoặc mật khẩu. Vui lòng thử lại!");
             Beep(400, 400);
-            Sleep(1000); // Đợi 1s để người dùng kịp đọc thông báo lỗi
+            Sleep(1000); 
         }
     }
+    return permission;
 }
-// Hàm cho menu 
+// Hàm cho menu
 void menu() {
     printf("\n");
     printf("+===========================================================================================================+\n");
@@ -781,102 +906,4 @@ void ghiFile() {
     }
 
     fclose(f);
-}
-int main() {
-    SetConsoleOutputCP(65001);
-    SetConsoleCP(65001);
-    int chon;
-    char ma[20], maNgay[20];
-
-// phần menuloading 
-    loading ();
-    system("cls");
-
-// phần đăng nhập 
-    login ();
-
-// phần menu chính 
-    printf("Nhập mã ngày: ");
-    scanf("%s", maNgay);
-
-    do {
-        printf("\n+================================+\n");
-        printf("|          MENU CHÍNH            |\n");
-        printf("+================================+\n");
-        printf("| 1. Đặt món                     |\n");
-        printf("| 2. Quản lý món                 |\n");
-        printf("| 3. Tìm theo mã ngày            |\n");
-        printf("| 4. Bảng xếp hạng món ăn        |\n");
-        printf("| 0. Kết thúc                    |\n");
-        printf("+================================+\n");
-        printf("Chọn: ");
-        scanf("%d", &chon);
-
-       if(chon == 1){
-
-    if (soDon >= MAX_DON) {
-        printf("Đã đạt giới hạn đơn hàng!\n");
-        continue;
-    }
-
-    menu();
-
-    while (1) {
-
-        printf("\nNhập mã giao dịch : ");
-        scanf("%s", ma);
-
-        if (strcmp(ma, maNgay) == 0) {
-            printf(">>> Đã nhập MÃ NGÀY. Thoát chế độ đặt món!\n");
-            break;
-        }
-
-        int trung = 0;
-        for(int i = 0; i < soDon; i++){
-            if(strcmp(maGD[i], ma) == 0){
-                trung = 1;
-                break;
-            }
-        }
-
-        if(trung){
-            printf("Mã giao dịch bị trùng! Nhập lại.\n");
-            continue;
-        }
-
-        strcpy(maGD[soDon], ma);
-        strcpy(maNgayDon[soDon], maNgay);
-
-        long tong = datMon();
-
-        tongTienDon[soDon] = tong;
-        soDon++;
-
-        printf("\n>>> Đặt xong 1 đơn. Tiếp tục hoặc nhập MÃ NGÀY (%s) để thoát.\n",maNgay);
-
-        if (soDon >= MAX_DON) {
-            printf("Đã đạt giới hạn đơn hàng!\n");
-            break;
-        }
-    }
-}
-
-        else if(chon == 2){
-            quanLyMon(); 
-        }
-
-        else if(chon == 3){
-            timTheoMaNgay(); 
-        }
-        else if (chon==4){
-            bangXepHang();
-        }
-
-    } while(chon != 0);
-
-    thongKe();
-    monBanNhieuNhat();
-    ghiFile();
-
-    return 0;
 }
