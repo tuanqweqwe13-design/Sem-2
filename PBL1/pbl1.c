@@ -2,6 +2,7 @@
 #include <string.h>
 #include <windows.h>
 #include <time.h>
+#include <conio.h>
 
 #define MAX 36
 #define MAX_CHON 5
@@ -44,7 +45,7 @@ int soMon = 31;
 int thongKeMon[MAX] = {0};
 char maNgayDon[MAX_DON][20];
 
-// Hàm cho phần menuloading
+// Hàm chung 
 void gotoxy(int x, int y) {
     COORD coord;
     coord.X = x;
@@ -63,8 +64,50 @@ void get_console_center(int *x, int *y) {
     *x = (csbi.srWindow.Right - csbi.srWindow.Left + 1) / 2;
     *y = (csbi.srWindow.Bottom - csbi.srWindow.Top + 1) / 2;
 }
-// Hàm cho phần đăng nhập
+// Hàm in loading
+void loading (){
+    int cx, cy;
+    get_console_center(&cx, &cy);
 
+    int welcomeY = cy - 8;
+    gotoxy(cx - 28, welcomeY++); printf("██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗███████╗");
+    gotoxy(cx - 28, welcomeY++); printf("██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██╔════╝");
+    gotoxy(cx - 28, welcomeY++); printf("██║ █╗ ██║█████╗  ██║     ██║     ██║   ██║██╔████╔██║█████╗  ");
+    gotoxy(cx - 28, welcomeY++); printf("██║███╗██║██╔══╝  ██║     ██║     ██║   ██║██║╚██╔╝██║██╔══╝  ");
+    gotoxy(cx - 28, welcomeY++); printf("╚███╔███╔╝███████╗███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗");
+    gotoxy(cx - 28, welcomeY++); printf(" ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝");
+
+    gotoxy(cx - 24, cy - 1);
+    printf("Chao mung ban den voi he thong quan ly nha hang!");
+
+    int width = 35;
+    int startX = cx - (width / 2);
+    int startY = cy + 2;
+
+    for (int i = 0; i <= width; i++) {
+        gotoxy(startX, startY);
+        
+        setColor(15, 15); 
+        for (int j = 0; j < i; j++) printf(" ");
+        
+        setColor(8, 8); 
+        for (int j = i; j < width; j++) printf(" ");
+
+        setColor(7, 0);
+        printf("] %d%%", (i * 100 / width));
+
+        if (i % 3 == 0) Beep(750, 30);
+        Sleep(60); 
+    }
+    Beep(800, 100); 
+    Beep(1200, 200); 
+    setColor(7, 0); 
+    gotoxy(startX + 5, startY + 2);
+    printf("Nhan Enter de tiep tuc...");
+    rewind(stdin);
+    while (getchar() != '\n'); 
+}
+// Hàm cho phần đăng nhập
 void inputPassword(char *pass) {
     char ch;
     int i = 0;
@@ -87,7 +130,6 @@ void inputPassword(char *pass) {
 int checkLogin(char *user, char *pass, char *roleOut) {
     FILE *f = fopen("accounts.txt", "r");
     if (f == NULL) {
-        // Nếu không có file, tạo file mẫu để tránh lỗi
         f = fopen("accounts.txt", "w");
         fprintf(f, "admin 123 admin\nstaff 123 staff");
         fclose(f);
@@ -95,7 +137,6 @@ int checkLogin(char *user, char *pass, char *roleOut) {
     }
 
     Account acc;
-    // Đọc từng dòng: Tài khoản - Mật khẩu - Quyền
     while (fscanf(f, "%s %s %s", acc.username, acc.password, acc.role) != EOF) {
         if (strcmp(user, acc.username) == 0 && strcmp(pass, acc.password) == 0) {
             strcpy(roleOut, acc.role); 
@@ -107,9 +148,55 @@ int checkLogin(char *user, char *pass, char *roleOut) {
     fclose(f);
     return 0;
 }
+void login(){
+    // Thiết lập tiếng Việt và ẩn con trỏ
+    SetConsoleOutputCP(65001);
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(hConsole, &cursorInfo);
+    cursorInfo.bVisible = TRUE; // Hiện con trỏ để người dùng biết chỗ nhập
+    SetConsoleCursorInfo(hConsole, &cursorInfo);
 
+    char user[30], pass[30], role[10];
 
-// Hàm cho phần tổng các tính năng 
+    // Vòng lặp vô tận cho đến khi đăng nhập đúng
+    while (1) {
+        system("cls");
+        printf("\n=========================================");
+        printf("\n        ĐĂNG NHẬP HỆ THỐNG             ");
+        printf("\n=========================================");
+        
+        printf("\n\nTài khoản: ");
+        scanf("%s", user);
+        
+        printf("Mật khẩu : ");
+        inputPassword(pass);
+
+        int result = checkLogin(user, pass, role);
+
+        if (result > 0) {
+            printf("\n\n-----------------------------------------");
+            printf("\nĐăng nhập thành công!");
+            printf("\nQuyền hạn: %s", (result == 1) ? "QUẢN LÝ (ADMIN)" : "NHÂN VIÊN (STAFF) \n");
+            
+            Beep(1000, 200);
+            
+            if (result == 1) {
+                printf(" \n Chào mừng Admin! \n");
+            } else {
+                printf(" \n Chào mừng Staff!\n");
+            }
+                printf("\n(Nhấn phím bất kỳ để tiếp tục...)");
+                getch();
+            break; // Thoát vòng lặp đăng nhập
+        } else {
+            printf("\n\n[!] Sai tài khoản hoặc mật khẩu. Vui lòng thử lại!");
+            Beep(400, 400);
+            Sleep(1000); // Đợi 1s để người dùng kịp đọc thông báo lỗi
+        }
+    }
+}
+// Hàm cho menu 
 void menu() {
     printf("\n");
     printf("+===========================================================================================================+\n");
@@ -136,8 +223,6 @@ void menu() {
     if(dem % 3 != 0) printf("\n");
 
     printf("+===========================================================================================================+\n");
-
-  
     printf("|                              B. MON PHU                                                                   |\n");
     printf("+===========================================================================================================+\n");
 
@@ -158,8 +243,6 @@ void menu() {
     if(dem % 3 != 0) printf("\n");
 
     printf("+===========================================================================================================+\n");
-
-   
     printf("|                              C. MON NUOC                                                                  |\n");
     printf("+===========================================================================================================+\n");
 
@@ -183,7 +266,6 @@ void menu() {
     printf("|                 * Tren 2 trieu giam 25%%                                                                   |\n");
     printf("+===========================================================================================================+\n");
 }
-
 void inHoaDonTamTinh(int maMon[], int soLuong[], int n) {
     long tamTinh = 0;
 
@@ -212,7 +294,6 @@ void inHoaDonTamTinh(int maMon[], int soLuong[], int n) {
 
     printf("+=====================================================+\n\n");
 }
-
 long inHoaDon(int maMon[], int soLuong[], int n, char ghiChuDon[]) {
     long tong = 0;
     float chietkhau = 0;
@@ -374,7 +455,6 @@ long datMon() {
 
 return tong;
 }
-
 void monBanNhieuNhat() {
     int max = 0, idx = -1;
 
@@ -509,7 +589,6 @@ void xoaMon() {
 
     printf("Đã xóa món!\n");
 }
-
 void suaGiaMon() {
 
     char ma[5];
@@ -572,7 +651,6 @@ else if(chon == 4){
 
     } while(chon != 0);
 }
-
 void timTheoMaNgay() {
     char maNgay[20];
     printf("Nhập mã ngày cần tìm: ");
@@ -664,7 +742,6 @@ void thongKe() {
                i+1,maGD[i],tongTienDon[i]);
     }
 }
-
 void ghiFile() {
     FILE *f;
     f = fopen("donhang.txt", "a+");
@@ -693,103 +770,18 @@ void ghiFile() {
 
     fclose(f);
 }
-
 int main() {
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO cursorInfo;
-    GetConsoleCursorInfo(hConsole, &cursorInfo);
-    cursorInfo.bVisible = TRUE; // Hiện con trỏ để người dùng biết chỗ nhập
-    SetConsoleCursorInfo(hConsole, &cursorInfo);
-
     int chon;
     char ma[20], maNgay[20];
-    char user[30], pass[30], role[10];
 
 // phần menuloading 
-    int cx, cy;
-    get_console_center(&cx, &cy);
-
-    int welcomeY = cy - 8;
-    gotoxy(cx - 28, welcomeY++); printf("██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗███████╗");
-    gotoxy(cx - 28, welcomeY++); printf("██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██╔════╝");
-    gotoxy(cx - 28, welcomeY++); printf("██║ █╗ ██║█████╗  ██║     ██║     ██║   ██║██╔████╔██║█████╗  ");
-    gotoxy(cx - 28, welcomeY++); printf("██║███╗██║██╔══╝  ██║     ██║     ██║   ██║██║╚██╔╝██║██╔══╝  ");
-    gotoxy(cx - 28, welcomeY++); printf("╚███╔███╔╝███████╗███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗");
-    gotoxy(cx - 28, welcomeY++); printf(" ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝");
-
-    gotoxy(cx - 24, cy - 1);
-    printf("Chao mung ban den voi he thong quan ly nha hang!");
-
-    int width = 35;
-    int startX = cx - (width / 2);
-    int startY = cy + 2;
-
-    for (int i = 0; i <= width; i++) {
-        gotoxy(startX, startY);
-        
-        setColor(15, 15); 
-        for (int j = 0; j < i; j++) printf(" ");
-        
-        setColor(8, 8); 
-        for (int j = i; j < width; j++) printf(" ");
-
-        setColor(7, 0);
-        printf("] %d%%", (i * 100 / width));
-
-        if (i % 3 == 0) Beep(750, 30);
-        Sleep(60); 
-    }
-    Beep(800, 100); 
-    Beep(1200, 200); 
-    setColor(7, 0); 
-    gotoxy(startX + 5, startY + 2);
-    printf("Nhan Enter de tiep tuc...");
-    
-    rewind(stdin);
-    while (getchar() != '\n'); 
-
+    loading ();
     system("cls");
 
 // phần đăng nhập 
-    while (1) {
-        system("cls");
-        printf("\n=========================================");
-        printf("\n        ĐĂNG NHẬP HỆ THỐNG             ");
-        printf("\n=========================================");
-        
-        printf("\n\nTài khoản: ");
-        scanf("%s", user);
-        
-        printf("Mật khẩu : ");
-        inputPassword(pass);
-
-        int result = checkLogin(user, pass, role);
-
-        if (result > 0) {
-            printf("\n\n-----------------------------------------");
-            printf("\nĐăng nhập thành công!");
-            printf("\nQuyền hạn: %s", (result == 1) ? "QUẢN LÝ (ADMIN)" : "NHÂN VIÊN (STAFF) \n");
-            
-            Beep(1000, 200);
-            
-            if (result == 1) {
-                printf(" \n Chào mừng Admin! \n");
-            } else {
-                printf(" \n Chào mừng Staff!\n");
-            }
-                printf("\n(Nhấn phím bất kỳ để tiếp tục...)");
-                getch();
-                system("cls");
-
-            break; // Thoát vòng lặp đăng nhập
-        } else {
-            printf("\n\n[!] Sai tài khoản hoặc mật khẩu. Vui lòng thử lại!");
-            Beep(400, 400);
-            Sleep(1000); // Đợi 1s để người dùng kịp đọc thông báo lỗi
-        }
-    }
+    login ();
 // phần menu chính 
     printf("Nhập mã ngày: ");
     scanf("%s", maNgay);
