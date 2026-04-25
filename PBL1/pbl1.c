@@ -108,71 +108,80 @@ int main() {
         printf("+=============================================+\n");
         printf("Chọn: ");
         scanf("%d", &chon);
+        system ("cls");
 
-       if(chon == 1){
-
-        if (soDon >= MAX_DON) {
-        printf("Đã đạt giới hạn đơn hàng!\n");
-        continue;}
-
-    menu();
-
-    while (1) {
-
-        printf("\nNhập mã giao dịch : ");
-        scanf("%s", ma);
-
-        if (strcmp(ma, maNgay) == 0) {
-            printf(">>> Đã nhập MÃ NGÀY. Thoát chế độ đặt món!\n");
-            break;
-        }
-
-        int trung = 0;
-        for(int i = 0; i < soDon; i++){
-            if(strcmp(maGD[i], ma) == 0){
-                trung = 1;
-                break;
-            }
-        }
-
-        if(trung){
-            printf("Mã giao dịch bị trùng! Nhập lại.\n");
-            continue;
-        }
-
-        strcpy(maGD[soDon], ma);
-        strcpy(maNgayDon[soDon], maNgay);
-
-        long tong = datMon();
-
-        tongTienDon[soDon] = tong;
-        soDon++;
-
-        printf("\n>>> Đặt xong 1 đơn. Tiếp tục hoặc nhập MÃ NGÀY (%s) để thoát.\n",maNgay);
+    if(chon == 1){
 
         if (soDon >= MAX_DON) {
             printf("Đã đạt giới hạn đơn hàng!\n");
-            break;
+            continue;}
+
+        menu();
+
+        while (1) {
+
+            printf("\nNhập mã giao dịch : ");
+            scanf("%s", ma);
+
+            if (strcmp(ma, maNgay) == 0) {
+                printf(">>> Đã nhập MÃ NGÀY. Thoát chế độ đặt món!\n");
+                break;
+            }
+
+            int trung = 0;
+            for(int i = 0; i < soDon; i++){
+                if(strcmp(maGD[i], ma) == 0){
+                    trung = 1;
+                    break;
+                }
+            }
+
+            if(trung){
+                printf("Mã giao dịch bị trùng! Nhập lại.\n");
+                continue;
+            }
+
+            strcpy(maGD[soDon], ma);
+            strcpy(maNgayDon[soDon], maNgay);
+
+            long tong = datMon();
+
+            tongTienDon[soDon] = tong;
+            soDon++;
+
+            printf("\n>>> Đặt xong 1 đơn. Tiếp tục hoặc nhập MÃ NGÀY (%s) để thoát.\n",maNgay);
+
+            if (soDon >= MAX_DON) {
+                printf("Đã đạt giới hạn đơn hàng!\n");
+                break;
+            }
         }
     }
-}
 
         else if(chon == 2 && userPermission == 1){
             quanLyMon(); 
+            system("cls");
         }
 
         else if(chon == 3 && userPermission == 1){
-            timTheoMaNgay(); 
+            timTheoMaNgay();      
+            system("cls");
+
         }
         else if (chon==4 && userPermission == 1){
             bangXepHang();
+            system("cls");
+
         }
         else if (chon==1 && userPermission == 2 || chon == 2 && userPermission == 2 || chon == 3 && userPermission == 2 || chon == 4 && userPermission == 2){
             printf ("Bạn không có quyền này, hãy chọn lại!");
-            continue;;
+            system("cls");
+            continue;
         }
-    } while(chon != 0);
 
+    } while(chon != 0);
+    
+    system("cls");
     thongKe();
     monBanNhieuNhat();
     ghiFile();
