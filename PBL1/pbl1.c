@@ -83,13 +83,12 @@ int main() {
     SetConsoleCP(65001);
     int chon;
     char ma[20], maNgay[20];
-    int userPermission = login();
 // phần menuloading 
     loading ();
     system("cls");
 
 // phần đăng nhập 
-    login ();
+    int userPermission = login();
     system("cls");
 
 // phần menu chính 
@@ -781,6 +780,7 @@ void quanLyMon() {
         printf("+================================+\n");
         printf("Chọn: ");
         scanf("%d", &chon);
+        system("cls");
 
         if(chon == 1){
             xemDanhSachMon();
@@ -792,8 +792,7 @@ void quanLyMon() {
            xoaMon();
 }
 else if(chon == 4){
-            suaGiaMon();
-            }
+            suaGiaMon();}
 
     } while(chon != 0);
 }
