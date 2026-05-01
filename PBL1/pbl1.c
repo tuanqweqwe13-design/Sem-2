@@ -510,95 +510,135 @@ void capNhatThongKe(int maMon[], int soLuong[], int n){
     }
 }
 long datMon() {
+    char dong[300];
     char ma[5];
     int sl;
     int maMon[MAX_CHON];
     int soLuong[MAX_CHON];
     char ghiChuDon[200];
     int n = 0;
+    int chotDon = 0;
 
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+
+    printf ("Note :");
+    printf ("\n + Bạn có thể nhập nhiều món cùng lúc, cách nhau bằng dấu cách (Ví dụ: 1A 2 3B 1 để đặt 2 phần Phở Bò Tái Lăn và 1 phần Mì Cay)");
+    printf ("\n + Nhập mã món + số lượng (0 0 để chốt, MA 0 để xóa) ");
+    printf ("\n (Ví dụ: 1A 2 để đặt 2 phần Phở Bò Tái Lăn, hoặc 1A 0 để xóa Phở Bò Tái Lăn khỏi giỏ)");
+    printf ("\n + Chỉ được đặt 5 món trong 1 đơn, nếu vượt quá sẽ không tính, vui lòng chốt đơn và đặt thêm đơn mới");
+    printf ("\n");
     while (1) {
-    printf("Nhập mã món + số lượng (0 0 để chốt, MA 0 để xóa): ");
-    scanf("%s %d", ma, &sl);
+        printf ("\nNhập món :");
 
-    if (strcmp(ma,"0")==0 && sl==0) break;
+        fgets(dong, sizeof(dong), stdin);
+        dong[strcspn(dong, "\n")] = 0;
 
-    int idx = -1;
-    for(int i=0;i<soMon;i++){
-        if(strcmp(ma, dsachma[i])==0){
-            idx = i;
-            break;
-        }
-    }
+        char *tokenMa = strtok(dong, " \t");
 
-    if(idx == -1){
-        printf("Sai mã món!\n");
-        continue;
-    }
-    if(sl < 0 || sl > 1000){
-        printf("Số lượng không hợp lý!\n");
-        continue;
-    }
+        while (tokenMa != NULL) {
+            char *tokenSl = strtok(NULL, " \t");
 
-    int viTriTrongGio = -1;
-    for(int i=0;i<n;i++){
-        if(maMon[i] == idx){
-            viTriTrongGio = i;
-            break;
-        }
-    }
-
-    if(sl == 0){
-        if(viTriTrongGio != -1){
-
-            for(int i=viTriTrongGio;i<n-1;i++){
-                maMon[i] = maMon[i+1];
-                soLuong[i] = soLuong[i+1];
+            if (tokenSl == NULL) {
+                printf("Thiếu số lượng cho mã món %s!\n", tokenMa);
+                break;
             }
-            n--;
-            printf("Đã xóa món!\n");
-        } else {
-            printf("Món chưa có để xóa!\n");
+
+            strcpy(ma, tokenMa);
+            sscanf(tokenSl, "%d", &sl);
+
+            if (strcmp(ma, "0") == 0 && sl == 0) {
+                chotDon = 1;
+                break;
+            }
+
+            int idx = -1;
+
+            for (int i = 0; i < soMon; i++) {
+                if (strcmp(ma, dsachma[i]) == 0) {
+                    idx = i;
+                    break;
+                }
+            }
+
+            if (idx == -1) {
+                printf("Sai mã món: %s\n", ma);
+                tokenMa = strtok(NULL, " \t");
+                continue;
+            }
+
+            if (sl < 0 || sl > 1000) {
+                printf("Số lượng không hợp lý!\n");
+                tokenMa = strtok(NULL, " \t");
+                continue;
+            }
+
+            int viTriTrongGio = -1;
+
+            for (int i = 0; i < n; i++) {
+                if (maMon[i] == idx) {
+                    viTriTrongGio = i;
+                    break;
+                }
+            }
+
+            if (sl == 0) {
+                if (viTriTrongGio != -1) {
+                    for (int i = viTriTrongGio; i < n - 1; i++) {
+                        maMon[i] = maMon[i + 1];
+                        soLuong[i] = soLuong[i + 1];
+                    }
+
+                    n--;
+                    printf("Đã xóa món %s!\n", ma);
+                } else {
+                    printf("Món chưa có để xóa!\n");
+                }
+            } else {
+                if (viTriTrongGio != -1) {
+                    soLuong[viTriTrongGio] = sl;
+                    printf("Đã cập nhật món %s!\n", ma);
+                } else {
+                    if (n < MAX_CHON) {
+                        maMon[n] = idx;
+                        soLuong[n] = sl;
+                        n++;
+
+                        printf("Đã thêm món %s!\n", ma);
+
+                        if (n == MAX_CHON) {
+                            printf("Đã đạt tối đa 5 món. Chốt đơn!\n");
+                            chotDon = 1;
+                            break;
+                        }
+                    } else {
+                        printf("Giỏ hàng đầy!\n");
+                        chotDon = 1;
+                        break;
+                    }
+                }
+            }
+
+            tokenMa = strtok(NULL, " \t");
         }
-        continue;
-    }
 
-    
-    if(viTriTrongGio != -1){
-        
-        soLuong[viTriTrongGio] = sl;
-        
-        printf("Đã cập nhật!\n");
-    }
-   
-    else {
-    if(n < MAX_CHON){
-        maMon[n] = idx;
-        soLuong[n] = sl;
-        n++;
+        if (n > 0) {
+            inHoaDonTamTinh(maMon, soLuong, n);
+        }
 
-        printf("Đã thêm món!\n");
-
-        if(n == MAX_CHON){
-            printf("Đã đạt tối đa 5 món .Chốt đơn ! \n");
+        if (chotDon == 1) {
             break;
         }
-    } else {
-        printf("Giỏ hàng đầy!\n");
-        break;
     }
-}
-    if(n > 0) inHoaDonTamTinh(maMon, soLuong, n);
-}
-    getchar(); 
+
     printf("Nhập ghi chú cho đơn (Enter để bỏ qua): ");
     fgets(ghiChuDon, 200, stdin);
     ghiChuDon[strcspn(ghiChuDon, "\n")] = 0;
 
-    long tong =inHoaDon(maMon,soLuong,n,ghiChuDon);
-    capNhatThongKe(maMon,soLuong,n); 
+    long tong = inHoaDon(maMon, soLuong, n, ghiChuDon);
+    capNhatThongKe(maMon, soLuong, n);
 
-return tong;
+    return tong;
 }
 void monBanNhieuNhat() {
     int max = 0, idx = -1;
